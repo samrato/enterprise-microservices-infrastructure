@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deployment-operator-sa
+  namespace: production
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deployment-operator-role
+  namespace: production
+rules:
+- apiGroups: ["", "apps", "autoscaling"]
+  resources: ["deployments", "replicasets", "pods", "services", "horizontalpodautoscalers", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: deployment-operator-rb
+  namespace: production
+subjects:
+- kind: ServiceAccount
+  name: deployment-operator-sa
+  namespace: production
+roleRef:
+  kind: Role
+  name: deployment-operator-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Read-only Auditor ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: security-auditor-cr
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["*"]
+  verbs: ["get", "list", "watch"]
